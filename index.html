@@ -3,159 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台灣景點生詞練習 - 夜市篇</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>家電生詞配對挑戰</title>
     <style>
-        .perspective-1000 { perspective: 1000px; }
-        .card-inner {
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
+        :root {
+            --primary: #4a90e2;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --bg: #f0f2f5;
         }
-        .is-flipped { transform: rotateY(180deg); }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-    </style>
-</head>
-<body class="bg-orange-50 min-h-screen">
 
-<div id="app" class="max-w-4xl mx-auto px-4 py-8">
-    <div class="text-center mb-6">
-        <h1 class="text-4xl font-extrabold text-orange-600 mb-2">🏮 台灣夜市生詞配對</h1>
-        <p class="text-slate-600">找出相同的景點圖片與生詞文字吧！</p>
-        
-        <div class="mt-4 flex justify-center gap-8 items-center bg-white py-3 px-6 rounded-full shadow-sm inline-flex">
-            <span class="text-xl font-bold text-slate-700">配對成功：{{ matchedPairs }} / 8</span>
-            <button @click="resetGame" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-lg transition">
-                重新開始
-            </button>
-        </div>
-    </div>
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
 
-    <div class="grid grid-cols-4 gap-4 md:gap-6">
-        <div v-for="(card, index) in cards" :key="index" 
-             class="perspective-1000 aspect-square cursor-pointer"
-             @click="flipCard(index)">
-            
-            <div class="card-inner relative w-full h-full shadow-lg rounded-2xl"
-                 :class="{ 'is-flipped': card.isFlipped || card.isMatched }">
-                
-                <div class="backface-hidden absolute inset-0 bg-orange-400 flex items-center justify-center rounded-2xl border-4 border-white">
-                    <span class="text-5xl text-white font-bold">?</span>
-                </div>
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
 
-                <div class="backface-hidden rotate-y-180 absolute inset-0 bg-white flex flex-col items-center justify-center rounded-2xl border-4"
-                     :class="card.isMatched ? 'border-green-400 bg-green-50' : 'border-orange-200'">
-                    
-                    <div class="text-5xl mb-2">{{ card.icon }}</div>
-                    <div class="text-2xl md:text-3xl font-bold text-slate-800">{{ card.word }}</div>
-                    <div class="text-sm md:text-base text-orange-500 font-medium mt-1">{{ card.pinyin }}</div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <div v-if="isWin" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
-        <div class="bg-white rounded-3xl p-10 text-center shadow-2xl animate-bounce">
-            <div class="text-7xl mb-4">🏆</div>
-            <h2 class="text-3xl font-bold text-slate-800 mb-4">太棒了！練習完成！</h2>
-            <button @click="resetGame" class="bg-orange-500 text-white text-xl font-bold px-8 py-3 rounded-full hover:bg-orange-600 transition">
-                再玩一次
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-const { createApp, ref, computed } = Vue;
-
-createApp({
-    setup() {
-        // 定義 8 組夜市相關生詞
-        const vocabulary = [
-            { word: '夜市', pinyin: 'yè shì', icon: '🌃' },
-            { word: '雞排', pinyin: 'jī pái', icon: '🍗' },
-            { word: '珍珠奶茶', pinyin: 'zhēn zhū nǎi chá', icon: '🧋' },
-            { word: '臭豆腐', pinyin: 'chòu dòu fu', icon: '🍲' },
-            { word: '木瓜牛奶', pinyin: 'mù guā niú nǎi', icon: '🥛' },
-            { word: '烤玉米', pinyin: 'kǎo yù mǐ', icon: '🌽' },
-            { word: '大腸包小腸', pinyin: 'dà cháng bāo xiǎo cháng', icon: '🌭' },
-            { word: '地瓜球', pinyin: 'dì guā qiú', icon: '🍡' }
-        ];
-
-        const cards = ref([]);
-        const flippedCards = ref([]);
-        const isLock = ref(false); // 防止快速點擊
-
-        const matchedPairs = computed(() => {
-            return cards.value.filter(c => c.isMatched).length / 2;
-        });
-
-        const isWin = computed(() => matchedPairs.value === 8);
-
-        const resetGame = () => {
-            // 複製兩份詞彙，一份作為文字，一份作為圖片（此處為了配對直覺，我們讓兩張卡片內容一致）
-            const gameData = [...vocabulary, ...vocabulary].map((item, index) => ({
-                ...item,
-                id: index,
-                isFlipped: false,
-                isMatched: false
-            }));
-
-            // 隨機洗牌
-            cards.value = gameData.sort(() => Math.random() - 0.5);
-            flippedCards.value = [];
-            isLock.value = false;
-        };
-
-        const flipCard = (index) => {
-            const card = cards.value[index];
-            
-            // 忽略已翻開、已配對或鎖定狀態
-            if (isLock.value || card.isFlipped || card.isMatched) return;
-
-            card.isFlipped = true;
-            flippedCards.value.push(index);
-
-            if (flippedCards.value.length === 2) {
-                checkMatch();
-            }
-        };
-
-        const checkMatch = () => {
-            isLock.value = true;
-            const [idx1, idx2] = flippedCards.value;
-            const card1 = cards.value[idx1];
-            const card2 = cards.value[idx2];
-
-            if (card1.word === card2.word) {
-                // 配對成功
-                setTimeout(() => {
-                    card1.isMatched = true;
-                    card2.isMatched = true;
-                    flippedCards.value = [];
-                    isLock.value = false;
-                }, 500);
-            } else {
-                // 配對失敗，翻回去
-                setTimeout(() => {
-                    card1.isFlipped = false;
-                    card2.isFlipped = false;
-                    flippedCards.value = [];
-                    isLock.value = false;
-                }, 1000);
-            }
-        };
-
-        resetGame();
-
-        return {
-            cards, matchedPairs, isWin,
-            flipCard, resetGame
-        };
-    }
-}).mount('#app');
-</script>
-</body>
-</html>
+        .timer-box {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--danger);
+            background: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0...
